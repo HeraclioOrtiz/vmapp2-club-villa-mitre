@@ -95,7 +95,7 @@ function CardInner({
       {/* Barra de marca con logo local */}
       <View style={styles.brandBar}>
         <Image
-          source={require('../assets/logo.png')}
+          source={require('../../assets/logo.png')}
           style={styles.brandLogo}
           resizeMode="contain"
         />

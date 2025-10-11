@@ -1,161 +1,155 @@
-# VMApp2 - Club Villa Mitre App
+# Villa Mitre App
 
-Una aplicación móvil React Native + Expo para la gestión del Club Villa Mitre con arquitectura Redux y mock API.
+Aplicación móvil para el Club Villa Mitre desarrollada con React Native y Expo.
 
-## 🚀 Instalación y Setup
+## 🚀 Inicio Rápido
 
-### 1. Instalar dependencias
+### Prerrequisitos
+- Node.js (v18 o superior)
+- npm o yarn
+- Expo CLI
+- EAS CLI (para builds)
 
+### Instalación
 ```bash
-npm install @reduxjs/toolkit react-redux redux-persist miragejs @react-native-async-storage/async-storage
-```
+# Clonar el repositorio
+git clone [repository-url]
+cd vmapp2
 
-### 2. Ejecutar la aplicación
+# Instalar dependencias
+npm install
 
-```bash
-# Para web (recomendado para desarrollo)
-npm run web
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus configuraciones
 
-# Para móvil físico
+# Iniciar en modo desarrollo
 npm start
-# Luego escanear QR con Expo Go
-
-# Para simuladores
-npm run android  # Android
-npm run ios      # iOS (solo macOS)
 ```
 
-## 📁 Arquitectura del Proyecto
+### Desarrollo
+```bash
+# Iniciar con Expo Go
+npm start
+
+# Iniciar en Android
+npm run android
+
+# Iniciar en iOS
+npm run ios
+```
+
+## 📱 Builds
+
+### APK para Android
+```bash
+# Build de preview (testing)
+npm run build:android
+
+# Build de producción
+eas build --platform android --profile production
+```
+
+### Configuración
+- **Package ID**: `com.villamitre.vmapp2`
+- **API Base**: `http://surtekbb.com/api`
+- **Credenciales de prueba**: DNI `59964604`, Password `password123`
+
+## 📚 Documentación
+
+Toda la documentación del proyecto se encuentra en la carpeta [`docs/`](./docs/):
+
+- **[Arquitectura](./docs/ARCHITECTURE.md)** - Estructura y patrones del proyecto
+- **[API Contracts](./docs/API-MOBILE-CONTRACTS.md)** - Documentación de endpoints
+- **[Guía de Dependencias](./docs/DEPENDENCIES.md)** - Librerías y versiones
+- **[Integración Frontend-Backend](./docs/FRONTEND_BACKEND_INTEGRATION.md)** - Guía de integración
+- **[Plan de Testing](./docs/TEST_PLAN.md)** - Estrategia de pruebas
+- **[Troubleshooting de Red](./docs/NETWORK_TROUBLESHOOTING.md)** - Solución de problemas
+
+## 🛠️ Tecnologías
+
+- **Frontend**: React Native + Expo
+- **Estado**: Redux Toolkit
+- **Navegación**: React Navigation
+- **HTTP Client**: Axios
+- **Testing**: Jest + React Native Testing Library
+- **Build**: EAS Build
+
+## 🏗️ Estructura del Proyecto
 
 ```
 src/
-├── types/              # Interfaces TypeScript
-├── store/              # Redux store y slices
-├── services/           # Servicios API
-├── mirage/            # Mock server
-├── hooks/             # Custom hooks
-├── providers/         # React providers
-└── utils/             # Utilidades
+├── components/     # Componentes reutilizables
+├── screens/        # Pantallas de la app
+├── services/       # Servicios API
+├── store/          # Estado global
+├── utils/          # Utilidades
+├── types/          # Tipos TypeScript
+└── styles/         # Estilos globales
 ```
 
-## 🔧 Funcionalidades Implementadas
+## 🔧 Scripts Disponibles
 
-### ✅ Redux Store Completo
-- **Auth**: Autenticación con persistencia
-- **Actividades**: Gestión de actividades deportivas
-- **Beneficios**: Áreas y servicios del club
-- **Cupones**: Sistema de cupones con categorías
-- **Puntos**: Sistema de puntos y canje
-- **Locales**: Ubicaciones para mapas
-
-### ✅ Mock API con Mirage.js
-- Datos realistas para desarrollo
-- Endpoints completos para todas las funcionalidades
-- Simulación de delays de red
-
-### ✅ Screens Refactorizadas
-- **LoginScreen**: Integrado con Redux auth
-- **MisActividadesScreen**: Carga datos desde Redux
-- Manejo de loading states y errores
-
-## 🎯 Uso de la Nueva Arquitectura
-
-### Custom Hooks Disponibles
-
-```typescript
-// Autenticación
-const { login, logout, user, isAuthenticated, loading, error } = useAuth();
-
-// Actividades
-const { actividades, loading, error, loadActividades } = useActividades();
-
-// Beneficios
-const { beneficios, loading, error } = useBeneficios();
-
-// Cupones
-const { cupones, categoriaSeleccionada, selectCategoria } = useCupones();
-
-// Puntos
-const { puntos, loading, canjear } = usePuntos();
-
-// Locales
-const { locales, loading } = useLocales();
+```bash
+npm start           # Iniciar Expo dev server
+npm run android     # Ejecutar en Android
+npm run ios         # Ejecutar en iOS
+npm run web         # Ejecutar en web
+npm run build:android   # Build APK Android
+npm run build:ios       # Build iOS
+npm test            # Ejecutar tests
+npm run lint        # Linter
 ```
 
-### Ejemplo de Integración
+## 🌐 Entornos
 
-```typescript
-import { useActividades } from '../src/hooks/useActividades';
+### Desarrollo
+- Mock server con Mirage.js
+- Hot reload habilitado
+- Debug tools disponibles
 
-function MiScreen() {
-  const { actividades, loading, error } = useActividades();
-  
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage />;
-  
-  return (
-    <View>
-      {actividades.map(actividad => (
-        <ActividadCard key={actividad.id} actividad={actividad} />
-      ))}
-    </View>
-  );
-}
-```
+### Producción
+- API real: `http://surtekbb.com/api`
+- Optimizaciones habilitadas
+- Error tracking
 
-## 🔄 Estado de Migración
+## 📋 Estado del Proyecto
 
-### ✅ Completado
-- Arquitectura Redux base
-- Mock server Mirage.js
-- LoginScreen refactorizado
-- MisActividadesScreen refactorizado
-- Custom hooks implementados
+### Funcionalidades Core
+- ✅ Autenticación implementada
+- ✅ Navegación configurada
+- ✅ Integración API completa
+- ✅ Build APK funcional
+- 🔄 SSL certificate (pendiente)
+- 📋 Push notifications (planificado)
 
-### 🔄 Pendiente
-- MisBeneficiosScreen
-- MisCuponesScreen
-- MisPuntosScreen
-- MiCarnetScreen
-- Integración de mapas con Redux
+### Sistema Gym (API v2.0)
+- ✅ **Tipos TypeScript actualizados** - Soporte completo para API v2.0
+- ✅ **gymService migrado** - Nuevos endpoints de sesiones y progreso
+- ✅ **Helpers creados** - Utilidades para frecuencias y formateo
+- 🔄 **Pantallas en migración** - Dashboard, Calendar, Templates
+- 📋 **Entrenamiento activo** - Pantalla en desarrollo
+- 📋 **Historial de progreso** - Próxima fase
 
-## 🧪 Testing
+Ver: [Plan de Migración Gym v2.0](./docs/GYM_V2_MIGRATION_PLAN.md)
 
-### Credenciales de Login (Mock)
-- **Email**: cualquier email válido
-- **Password**: cualquier contraseña
+## 🤝 Contribución
 
-### Datos Mock Disponibles
-- 16 actividades deportivas
-- 7 áreas de beneficios
-- 6 cupones con categorías
-- Sistema de puntos funcional
-- 3 locales para mapas
+1. Fork el proyecto
+2. Crear branch de feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit cambios (`git commit -m 'Agregar nueva funcionalidad'`)
+4. Push al branch (`git push origin feature/nueva-funcionalidad`)
+5. Abrir Pull Request
 
-## 🛠️ Próximos Pasos
+## 📄 Licencia
 
-1. **Completar migración de screens restantes**
-2. **Integrar mapas con Redux**
-3. **Agregar persistencia offline**
-4. **Implementar autenticación real**
-5. **Testing unitario**
+Este proyecto es privado y pertenece al Club Villa Mitre.
 
-## 📱 Compatibilidad
+## 📞 Soporte
 
-- ✅ **Web**: Funciona completamente
-- ✅ **iOS**: Compatible con Expo Go
-- ✅ **Android**: Compatible con Expo Go
-- ✅ **Cross-platform**: Mapas adaptativos (Leaflet/Native)
-
-## 🎨 Características UI/UX
-
-- Diseño responsive
-- Loading states elegantes
-- Manejo de errores con alertas
-- Navegación fluida
-- Carnet digital con QR/códigos de barras
-- Gráficos interactivos para puntos
+Para soporte técnico o consultas, contactar al equipo de desarrollo.
 
 ---
 
-**Desarrollado con React Native + Expo + Redux Toolkit + TypeScript**
+**Última actualización**: Septiembre 2025  
+**Versión**: 1.0.0

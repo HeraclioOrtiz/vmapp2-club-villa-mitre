@@ -4,19 +4,25 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { ActivityIndicator, View } from 'react-native';
 import { store, persistor } from '../store';
 import { makeServer } from '../mirage/server';
+import { shouldUseMirageServer, logEnvironmentConfig, testApiConnectivity } from '../utils/environment';
 
 // Singleton pattern to ensure Mirage only initializes once
 let mirageServer: any = null;
 let isInitialized = false;
 
 const initializeMirage = () => {
-  if (isInitialized || !__DEV__) {
-    console.log('🔍 AppProvider: Mirage already initialized or not in dev mode');
+  // Check environment variable to determine if Mirage should be used
+  const useMirageServer = shouldUseMirageServer();
+
+  if (isInitialized || !useMirageServer) {
+    console.log('🔍 AppProvider: Mirage already initialized or disabled via environment');
+    console.log('🔧 AppProvider: USE_MIRAGE_SERVER =', useMirageServer);
     return;
   }
 
   console.log('🚀 AppProvider: Initializing Mirage.js server (singleton)...');
-  console.log('🔧 AppProvider: __DEV__ is true, proceeding with Mirage setup');
+  logEnvironmentConfig();
+  console.log('🔧 AppProvider: Proceeding with Mirage setup');
   
   try {
     console.log('🔧 AppProvider: About to call makeServer...');
@@ -45,6 +51,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   useEffect(() => {
     // Initialize Mirage on component mount
     initializeMirage();
+    
+    // Test API connectivity if not using Mirage
+    if (!shouldUseMirageServer()) {
+      console.log('🔍 Running connectivity test...');
+      testApiConnectivity().catch(error => {
+        console.error('🚨 Connectivity test failed during app initialization:', error);
+      });
+    }
   }, []);
 
   return (

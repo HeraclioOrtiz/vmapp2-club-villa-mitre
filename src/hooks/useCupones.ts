@@ -7,10 +7,14 @@ import {
   clearCategoriaSeleccionada,
   clearError 
 } from '../store/slices/cuponesSlice';
+import { CuponesState } from '../types';
 
 export const useCupones = () => {
   const dispatch = useAppDispatch();
-  const { items: cupones, categoriaSeleccionada, loading, error } = useAppSelector((state) => state.cupones);
+  const cupones = useAppSelector((state) => state.cupones.items);
+  const loading = useAppSelector((state) => state.cupones.loading);
+  const error = useAppSelector((state) => state.cupones.error);
+  const categoriaSeleccionada = useAppSelector((state) => (state.cupones as CuponesState).categoriaSeleccionada);
 
   const loadCupones = useCallback(() => {
     return dispatch(fetchCupones());

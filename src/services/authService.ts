@@ -1,17 +1,73 @@
 import { apiClient } from './api';
-import { Usuario, LoginRequest, LoginResponse } from '../types';
+import { Usuario, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, SocialLoginRequest } from '../types';
+import { mapBackendUserToFrontend } from '../utils/userMapper';
 
 export class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    return apiClient.post<LoginResponse>('/auth/login', credentials);
+    const response = await apiClient.post<LoginResponse>('/auth/login', credentials);
+    
+    // Save token to AsyncStorage for persistence
+    if (response.data?.token) {
+      await apiClient.setAuthToken(response.data.token);
+    }
+    
+    return response;
   }
 
-  async logout(): Promise<{ success: boolean }> {
-    return apiClient.post<{ success: boolean }>('/auth/logout');
+  async register(userData: RegisterRequest): Promise<RegisterResponse> {
+    const response = await apiClient.post<RegisterResponse>('/auth/register', userData);
+    
+    // Save token to AsyncStorage for persistence
+    if (response.data?.token) {
+      await apiClient.setAuthToken(response.data.token);
+    }
+    
+    return response;
   }
 
-  async getCurrentUser(): Promise<Usuario> {
-    return apiClient.get<Usuario>('/auth/me');
+  async socialLogin(socialData: SocialLoginRequest): Promise<LoginResponse> {
+    const response = await apiClient.post<LoginResponse>('/auth/social-login', socialData);
+    
+    // Save token to AsyncStorage for persistence
+    if (response.data?.token) {
+      await apiClient.setAuthToken(response.data.token);
+    }
+    
+    return response;
+  }
+
+  async logout(): Promise<{ message: string }> {
+    try {
+      const response = await apiClient.post<{ message: string }>('/auth/logout');
+      
+      // Remove token from AsyncStorage
+      await apiClient.removeAuthToken();
+      
+      return response;
+    } catch (error) {
+      // Even if the API call fails, remove the token locally
+      await apiClient.removeAuthToken();
+      throw error;
+    }
+  }
+
+  async getCurrentUser(): Promise<{ data: Usuario }> {
+    return apiClient.get<{ data: Usuario }>('/auth/me');
+  }
+
+  // Helper method to check if user is authenticated
+  async isAuthenticated(): Promise<boolean> {
+    return await apiClient.hasAuthToken();
+  }
+
+  // Helper method to get user data with proper mapping
+  async getUserData(): Promise<Usuario | null> {
+    try {
+      const response = await this.getCurrentUser();
+      return mapBackendUserToFrontend(response.data);
+    } catch (error) {
+      return null;
+    }
   }
 }
 

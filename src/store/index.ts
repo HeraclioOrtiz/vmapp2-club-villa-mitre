@@ -6,13 +6,12 @@ import { combineReducers } from '@reduxjs/toolkit';
 // Slices
 import authReducer from './slices/authSlice';
 import actividadesReducer from './slices/actividadesSlice';
+import actividadesClubReducer from './slices/actividadesClubSlice';
 import beneficiosReducer from './slices/beneficiosSlice';
 import cuponesReducer from './slices/cuponesSlice';
 import puntosReducer from './slices/puntosSlice';
 import localesReducer from './slices/localesSlice';
-
-// Types
-import { RootState } from '../types';
+import estadoCuentaReducer from './slices/estadoCuentaSlice';
 
 // Persist config
 const persistConfig = {
@@ -25,10 +24,12 @@ const persistConfig = {
 const rootReducer = combineReducers({
   auth: authReducer,
   actividades: actividadesReducer,
+  actividadesClub: actividadesClubReducer,
   beneficios: beneficiosReducer,
   cupones: cuponesReducer,
   puntos: puntosReducer,
   locales: localesReducer,
+  estadoCuenta: estadoCuentaReducer,
 });
 
 // Persisted reducer
@@ -48,14 +49,16 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-// Types
+// Types - Infer RootState from the store itself
 export type AppDispatch = typeof store.dispatch;
-export type { RootState };
+export type RootState = ReturnType<typeof store.getState>;
 
 // Selectors helpers
 export const selectAuth = (state: RootState) => state.auth;
 export const selectActividades = (state: RootState) => state.actividades;
+export const selectActividadesClub = (state: RootState) => state.actividadesClub;
 export const selectBeneficios = (state: RootState) => state.beneficios;
 export const selectCupones = (state: RootState) => state.cupones;
 export const selectPuntos = (state: RootState) => state.puntos;
 export const selectLocales = (state: RootState) => state.locales;
+export const selectEstadoCuenta = (state: RootState) => state.estadoCuenta;

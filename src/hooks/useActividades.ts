@@ -2,13 +2,13 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from './redux';
 import { fetchActividades, fetchActividadById, clearError } from '../store/slices/actividadesSlice';
 
-export const useActividades = () => {
+export const useActividadesUsuario = () => {
   const dispatch = useAppDispatch();
   const { items: actividades, loading, error } = useAppSelector((state) => state.actividades);
   const hasLoadedRef = useRef(false);
 
   if (__DEV__) {
-    console.log('🎣 useActividades: Hook called with state:', {
+    console.log('🎣 useActividadesUsuario: Hook called with state:', {
       actividades: actividades.length,
       loading,
       error: !!error,
@@ -18,7 +18,7 @@ export const useActividades = () => {
 
   const loadActividades = useCallback(() => {
     if (__DEV__) {
-      console.log('🔄 useActividades: loadActividades called');
+      console.log('🔄 useActividadesUsuario: loadActividades called');
     }
     return dispatch(fetchActividades());
   }, [dispatch]);
@@ -38,7 +38,7 @@ export const useActividades = () => {
   useEffect(() => {
     if (!hasLoadedRef.current && !loading) {
       if (__DEV__) {
-        console.log('🔄 useActividades: Loading actividades on mount...');
+        console.log('🔄 useActividadesUsuario: Loading actividades on mount...');
       }
       hasLoadedRef.current = true;
       loadActividades();

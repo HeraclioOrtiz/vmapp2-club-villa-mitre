@@ -4,21 +4,32 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AppProvider } from './src/providers/AppProvider';
 import { useAuth } from './src/hooks/useAuth';
 import { RootStackParamList } from './src/types';
+import OnboardingScreen from './src/screens/OnboardingScreen';
 import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
 import HomeScreen from './src/screens/HomeScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppNavigator() {
   const { isAuthenticated } = useAuth();
+
+  // Determinar la pantalla inicial
+  // Si está autenticado → Home, sino → Onboarding (siempre)
+  const getInitialRoute = (): keyof RootStackParamList => {
+    if (isAuthenticated) return 'Home';
+    return 'Onboarding';
+  };
   
   return (
     <NavigationContainer>
       <Stack.Navigator 
-        initialRouteName={isAuthenticated ? "Home" : "Login"} 
+        initialRouteName={getInitialRoute()} 
         screenOptions={{ headerShown: false }}
       >
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>

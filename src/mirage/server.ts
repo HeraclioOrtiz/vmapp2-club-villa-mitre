@@ -1,157 +1,250 @@
-import { createServer } from 'miragejs';
-import { Usuario, Actividad, Beneficio, Cupon, Local, PuntosData } from '../types';
-
-// Mock data - JSON directo sin DB
-const mockData = {
-  usuario: {
-    id: '1',
-    nombre: 'Juan',
-    apellido: 'Pérez',
-    dni: '12345678',
-    email: 'juan.perez@email.com',
-    fotoUrl: 'https://randomuser.me/api/portraits/men/1.jpg',
-    validoHasta: '31/12/2025',
-    codigoBarras: '123456789012',
-  } as Usuario,
-
-  actividades: [
-    { id: '1', icono: '🥋', titulo: 'Karate', detalle: '+7 años (mixto)', contacto: 'Néstor 2915272778', imagenUrl: 'https://picsum.photos/id/1011/600/300' },
-    { id: '2', icono: '🤸', titulo: 'Gimnasia Artística', detalle: '+3 años (mixto)', contacto: 'IG: @gimnasiaartisticacvmbb', imagenUrl: 'https://picsum.photos/id/1012/600/300' },
-    { id: '3', icono: '⛸️', titulo: 'Patín', detalle: '+3 años (mixto)', contacto: 'Lorena Carinelli 2914370612', imagenUrl: 'https://picsum.photos/id/1013/600/300' },
-    { id: '4', icono: '🏐', titulo: 'Vóley', detalle: '+12 años (mixto)', contacto: 'Coordinación 2915348520', imagenUrl: 'https://picsum.photos/id/1014/600/300' },
-    { id: '5', icono: '⚽', titulo: 'Fútbol', detalle: '+6 años (mixto)', contacto: 'Entrenadores 2915348520', imagenUrl: 'https://picsum.photos/id/1015/600/300' },
-  ] as Actividad[],
-
-  beneficios: [
-    { id: '1', titulo: 'Área de Cultura', detalle: 'Talleres, festivales, espectáculos, reseñas y convocatorias culturales.', contacto: 'Cultura 2915348520', imagenUrl: 'https://picsum.photos/id/1031/600/300' },
-    { id: '2', titulo: 'Área Social', detalle: 'Campañas de salud, colectas, capacitaciones y cursos con salida laboral.', imagenUrl: 'https://picsum.photos/id/1032/600/300' },
-  ] as Beneficio[],
-
-  cupones: [
-    { id: '1', titulo: '10% Off Restaurante', descripcion: 'Descuento en comidas', validoHasta: '2025-12-31', categoria: 'Alimentos', imagenUrl: 'https://picsum.photos/id/1011/200/120' },
-  ] as Cupon[],
-
-  locales: [
-    { id: '1', nombre: 'Club Villa Mitre', latitude: -38.7196, longitude: -62.2658 },
-  ] as Local[],
-};
+import { createServer, Model, Factory, Response } from 'miragejs';
 
 export function makeServer({ environment = 'development' } = {}) {
-  console.log('🔧 Mirage: makeServer called - JSON directo sin DB');
+  console.log('🔧 Mirage: Initializing server with mock endpoints');
   
   const server = createServer({
     environment,
+    
+    models: {
+      user: Model,
+    },
+
+    factories: {
+      user: Factory.extend({
+        id(i) { return String(i); },
+        nombre() { return 'Usuario'; },
+        apellido() { return 'Test'; },
+        dni() { return '12345678'; },
+        email() { return 'test@email.com'; },
+        foto_url() { return 'https://via.placeholder.com/150'; },
+        nro_socio() { return '001234'; },
+        valido_hasta() { return '2024-12-31'; },
+        codigo_barras() { return '123456789012'; },
+        estado_cuenta() {
+          return {
+            al_dia: true,
+            cuotas_adeudadas: 0,
+            monto_adeudado: 0,
+            proximo_vencimiento: '2024-02-15',
+            ultimo_pago: '2024-01-15',
+            monto_ultimo_pago: 15000
+          };
+        }
+      }),
+    },
+
+    seeds(server) {
+      // Create test users with different password types
+      server.create('user', {
+        id: '1',
+        nombre: 'Santiago',
+        apellido: 'García',
+        dni: '12345678',
+        email: 'santiago@email.com',
+        user_type: 'api',
+        password: '123456789' // Solo números
+      });
+
+      server.create('user', {
+        id: '2',
+        nombre: 'María',
+        apellido: 'López',
+        dni: '87654321',
+        email: 'maria@email.com',
+        user_type: 'api',
+        password: 'abc123def' // Letras y números
+      });
+
+      server.create('user', {
+        id: '3',
+        nombre: 'Carlos',
+        apellido: 'Rodríguez',
+        dni: '11223344',
+        email: 'carlos@email.com',
+        user_type: 'local',
+        password: 'MiPassword2024!' // Letras, números y símbolos
+      });
+
+      // Usuario del contrato API
+      server.create('user', {
+        id: '4',
+        nombre: 'Usuario',
+        apellido: 'API Test',
+        dni: '59964604',
+        email: 'test@api.com',
+        user_type: 'api',
+        password: '123456789' // Del contrato API
+      });
+
+      // Usuario con problema reportado
+      server.create('user', {
+        id: '5',
+        nombre: 'Usuario',
+        apellido: 'Problema',
+        dni: '58964605',
+        email: 'problema@test.com',
+        user_type: 'api',
+        password: 'Zzxx4518688' // Password con letras y números
+      });
+    },
 
     routes() {
       this.namespace = 'api';
-      
-      // Log intercepted requests only in development
-      if (__DEV__) {
-        this.pretender.handledRequest = function(verb, path, request) {
-          console.log(`✅ Mirage intercepted: ${verb} ${path}`);
-        };
-        
-        this.pretender.unhandledRequest = function(verb, path) {
-          // Ignorar requests de simbolización de React Native
-          if (path.includes('/symbolicate') || path.includes('/inspector')) {
-            return;
-          }
-          console.error(`❌ Mirage unhandled: ${verb} ${path}`);
-        };
-      }
+      this.timing = 1000; // Simulate network delay
 
-      // Auth routes - JSON directo
+      // Authentication endpoints
       this.post('/auth/login', (schema, request) => {
-        const { email, password } = JSON.parse(request.requestBody);
-        
-        if (email && password) {
-          return {
-            user: mockData.usuario,
-            token: 'fake-jwt-token-' + Date.now(),
-          };
+        const { dni, password } = JSON.parse(request.requestBody);
+        console.log('🔐 Mirage LOGIN:', { dni, password });
+
+        // Simple validation
+        if (!dni || !password) {
+          return new Response(422, {}, {
+            success: false,
+            message: 'DNI y contraseña son requeridos',
+            errors: {
+              dni: dni ? [] : ['El DNI es requerido'],
+              password: password ? [] : ['La contraseña es requerida']
+            }
+          });
         }
+
+        // Buscar usuario por DNI
+        const user = schema.db.users.findBy({ dni });
         
-        return { error: 'Credenciales inválidas' };
+        if (!user) {
+          return new Response(401, {}, {
+            success: false,
+            message: 'DNI no encontrado',
+            errors: {
+              dni: ['El DNI no está registrado']
+            }
+          });
+        }
+
+        // Verificar contraseña
+        if (user.password && user.password !== password) {
+          return new Response(401, {}, {
+            success: false,
+            message: 'Contraseña incorrecta',
+            errors: {
+              password: ['La contraseña es incorrecta']
+            }
+          });
+        }
+
+        // Login exitoso
+        return new Response(200, {}, {
+          success: true,
+          data: {
+            user: user,
+            token: 'mock_jwt_token_' + Date.now()
+          },
+          message: 'Login exitoso'
+        });
+      });
+
+      this.post('/auth/register', (schema, request) => {
+        const userData = JSON.parse(request.requestBody);
+        console.log('📝 Mirage REGISTER:', userData);
+
+        const { name, email, password, password_confirmation, dni, phone } = userData;
+
+        // Validation
+        if (!name || !email || !password || !dni) {
+          return new Response(422, {}, {
+            success: false,
+            message: 'Todos los campos son requeridos',
+            errors: {
+              name: name ? [] : ['El nombre es requerido'],
+              email: email ? [] : ['El email es requerido'],
+              password: password ? [] : ['La contraseña es requerida'],
+              dni: dni ? [] : ['El DNI es requerido']
+            }
+          });
+        }
+
+        if (password !== password_confirmation) {
+          return new Response(422, {}, {
+            success: false,
+            message: 'Las contraseñas no coinciden',
+            errors: {
+              password_confirmation: ['Las contraseñas no coinciden']
+            }
+          });
+        }
+
+        // Check if user already exists
+        const existingUser = schema.db.users.findBy({ email });
+        if (existingUser) {
+          return new Response(422, {}, {
+            success: false,
+            message: 'El usuario ya existe',
+            errors: {
+              email: ['Este email ya está registrado']
+            }
+          });
+        }
+
+        // Create new user
+        const newUser = schema.create('user', {
+          nombre: name.split(' ')[0] || name,
+          apellido: name.split(' ').slice(1).join(' ') || 'Usuario',
+          email,
+          dni,
+          foto_url: 'https://via.placeholder.com/150',
+          nro_socio: String(Math.floor(Math.random() * 999999)).padStart(6, '0'),
+          valido_hasta: '2024-12-31',
+          codigo_barras: String(Math.floor(Math.random() * 999999999999)),
+          estado_cuenta: {
+            al_dia: true,
+            cuotas_adeudadas: 0,
+            monto_adeudado: 0,
+            proximo_vencimiento: '2024-02-15',
+            ultimo_pago: '2024-01-15',
+            monto_ultimo_pago: 15000
+          }
+        });
+
+        return new Response(201, {}, {
+          success: true,
+          data: {
+            user: newUser,
+            token: 'mock_jwt_token_' + Date.now()
+          },
+          message: 'Usuario registrado exitosamente'
+        });
       });
 
       this.post('/auth/logout', () => {
-        return { success: true };
-      });
-
-      this.get('/auth/me', () => {
-        return mockData.usuario;
-      });
-
-      // Actividades routes - JSON directo
-      this.get('/actividades', () => {
-        if (__DEV__) {
-          console.log('🎯 Mirage: /actividades route called - returning JSON directo');
-          console.log('📊 Mirage: actividades count:', mockData.actividades.length);
-        }
-        return mockData.actividades;
-      });
-
-      this.get('/actividades/:id', (schema, request) => {
-        const id = request.params.id;
-        const actividad = mockData.actividades.find(a => a.id === id);
-        return actividad || null;
-      });
-
-      // Beneficios routes - JSON directo
-      this.get('/beneficios', () => {
-        if (__DEV__) {
-          console.log('🎯 Mirage: /beneficios route called - returning JSON directo');
-        }
-        return mockData.beneficios;
-      });
-
-      // Cupones routes - JSON directo
-      this.get('/cupones', () => {
-        return mockData.cupones;
-      });
-
-      this.get('/cupones/categorias', () => {
-        return ['Alimentos', 'Entretenimiento', 'Moda'];
-      });
-
-      this.get('/cupones/:id', (schema, request) => {
-        const id = request.params.id;
-        const cupon = mockData.cupones.find(c => c.id === id);
-        return cupon || null;
-      });
-
-      // Puntos routes - JSON directo
-      this.get('/puntos', () => {
-        const puntosData: PuntosData = {
-          puntosTotales: 1200,
-          puntosObtenidos: 1800,
-          puntosGastados: 600,
-          historialMensual: [200, 300, 250, 400, 350, 300],
-        };
-        return puntosData;
-      });
-
-      this.post('/puntos/canjear', (schema, request) => {
-        const { puntosACanjear } = JSON.parse(request.requestBody);
-        
-        return {
+        return new Response(200, {}, {
           success: true,
-          nuevoPuntaje: 1200 - puntosACanjear,
-        };
+          message: 'Logout exitoso'
+        });
       });
 
-      // Locales routes - JSON directo
-      this.get('/locales', () => {
-        return mockData.locales;
+      this.get('/auth/user', (schema) => {
+        const user = schema.db.users[0];
+        return new Response(200, {}, {
+          success: true,
+          data: { user: user }
+        });
       });
 
-      // Timing simulation - reduced for mobile
-      this.timing = 200; // 200ms delay to simulate network
+      // Carnet endpoint
+      this.get('/user/carnet', (schema) => {
+        const user = schema.db.users[0];
+        return new Response(200, {}, {
+          success: true,
+          data: user
+        });
+      });
     },
   });
 
   if (__DEV__) {
-    console.log('✅ Mirage: Server initialized successfully');
+    console.log('✅ Mirage: Server initialized with mock endpoints');
   }
   
   return server;

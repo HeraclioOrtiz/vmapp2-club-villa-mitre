@@ -1,0 +1,38 @@
+# Test files
+**/__tests__/**
+**/*.test.ts
+**/*.test.tsx
+**/*.test.js
+**/*.test.jsx
+**/*.spec.ts
+**/*.spec.tsx
+**/*.spec.js
+**/*.spec.jsx
+
+# Test configuration
+jest.config.js
+jest.setup.js
+
+# Scripts
+scripts/
+
+# Documentation
+*.md
+docs/
+
+# Development files
+.vscode/
+.idea/
+*.log
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Local env files
+.env.local
+.env.development
+.env.test

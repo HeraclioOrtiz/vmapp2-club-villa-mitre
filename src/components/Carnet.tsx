@@ -1,20 +1,21 @@
 // components/CarnetFit.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
+import { Logo } from './Logo';
+import { CarnetQRCode } from './QRCode';
+import { Ionicons } from '@expo/vector-icons';
 
 type Props = {
   nombre: string;
   apellido: string;
   dni: string;
+  nroSocio: string;
   fotoUrl: string;
   validoHasta: string;
   codigoBarras?: string;
   maxWidth: number;
   maxHeight: number;
 };
-
-const qrUrl = (value: string, size: number) =>
-  `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(value)}`;
 
 const barcodeUrl = (value: string, scale = 3, height = 12) =>
   `https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(
@@ -30,6 +31,7 @@ export default function CarnetFit({
   nombre,
   apellido,
   dni,
+  nroSocio,
   fotoUrl,
   validoHasta,
   codigoBarras,
@@ -39,7 +41,7 @@ export default function CarnetFit({
   if (!(maxWidth > 0 && maxHeight > 0)) return null;
 
   const isLandscape = maxWidth > maxHeight;
-  const barcodeVal = (codigoBarras || dni).trim();
+  const barcodeVal = codigoBarras?.trim() || dni.trim();
 
   // --- MODO PORTRAIT (vertical sin rotar): "fit" completo ---
   if (!isLandscape) {
@@ -51,6 +53,7 @@ export default function CarnetFit({
             nombre={nombre}
             apellido={apellido}
             dni={dni}
+            nroSocio={nroSocio}
             fotoUrl={fotoUrl}
             validoHasta={validoHasta}
             barcodeVal={barcodeVal}
@@ -75,6 +78,7 @@ export default function CarnetFit({
               nombre={nombre}
               apellido={apellido}
               dni={dni}
+              nroSocio={nroSocio}
               fotoUrl={fotoUrl}
               validoHasta={validoHasta}
               barcodeVal={barcodeVal}
@@ -88,53 +92,97 @@ export default function CarnetFit({
 
 /* ----- UI interna de la tarjeta (vertical de diseño) ----- */
 function CardInner({
-  nombre, apellido, dni, fotoUrl, validoHasta, barcodeVal,
-}: { nombre: string; apellido: string; dni: string; fotoUrl: string; validoHasta: string; barcodeVal: string; }) {
+  nombre, apellido, dni, nroSocio, fotoUrl, validoHasta, barcodeVal,
+}: { nombre: string; apellido: string; dni: string; nroSocio: string; fotoUrl: string; validoHasta: string; barcodeVal: string; }) {
+  
+  // ========================================
+  // 📸 MANEJO DE ERROR DE CARGA DE IMAGEN
+  // ========================================
+  // Estado para controlar si la imagen falló al cargar
+  // Si falla, mostramos un placeholder con ícono
+  // ========================================
+  const [imageError, setImageError] = useState(false);
+  
+  // Placeholder URL - imagen genérica de avatar
+  const PLACEHOLDER_IMAGE = "https://ui-avatars.com/api/?name=" + 
+    encodeURIComponent(nombre + "+" + apellido) + 
+    "&background=00973D&color=fff&size=400&bold=true";
+
   return (
     <View style={styles.card}>
       {/* Barra de marca con logo local */}
       <View style={styles.brandBar}>
-        <Image
-          source={require('../../assets/logo.png')}
+        <Logo 
+          backgroundColor="dark" 
+          size="small"
           style={styles.brandLogo}
-          resizeMode="contain"
         />
         <Text style={styles.brandText}>CLUB VILLA MITRE</Text>
       </View>
 
       {/* Foto + datos */}
       <View style={styles.row}>
-        <Image source={{ uri: fotoUrl }} style={styles.photo} resizeMode="cover" />
+        {!imageError ? (
+          <Image 
+            source={{ uri: fotoUrl }} 
+            style={styles.photo} 
+            resizeMode="cover"
+            onLoad={() => {
+              if (__DEV__) {
+                console.log('✅ Carnet: Image loaded successfully');
+                console.log('🌐 URL:', fotoUrl);
+              }
+            }}
+            onError={(error) => {
+              if (__DEV__) {
+                console.log('❌ Carnet: Image failed to load');
+                console.log('🌐 URL intentada:', fotoUrl);
+                console.log('⚠️ Error:', error.nativeEvent.error);
+                console.log('🔄 Usando placeholder');
+              }
+              setImageError(true);
+            }}
+          />
+        ) : (
+          // Fallback: Mostrar placeholder con iniciales
+          <View style={[styles.photo, styles.photoPlaceholder]}>
+            <Image 
+              source={{ uri: PLACEHOLDER_IMAGE }}
+              style={styles.photo}
+              resizeMode="cover"
+            />
+          </View>
+        )}
         <View style={styles.info}>
-          <Text style={styles.name} numberOfLines={1}>{nombre} {apellido}</Text>
+          <Text style={styles.name} numberOfLines={2}>{nombre} {apellido}</Text>
+          <Text style={styles.nroSocio}>Nro Socio: {nroSocio}</Text>
           <Text style={styles.dni}>DNI: {dni}</Text>
-          <Text style={styles.valid}>Válido hasta: {validoHasta}</Text>
         </View>
       </View>
 
-      {/* Fila inferior: QR izquierda + Código de barras derecha, misma altura */}
-      <View style={styles.bottomRow}>
-        <View style={[styles.qrBox, { width: QR_SIZE, height: QR_SIZE }]}>
+      {/* Código de barras centrado y más grande */}
+      <View style={styles.barcodeSection}>
+        <View style={styles.barcodeBoxCentered}>
           <Image
-            source={{ uri: qrUrl(`DNI:${dni} | ${nombre} ${apellido}`, QR_SIZE) }}
-            style={styles.qrImg}
+            source={{ uri: barcodeUrl(barcodeVal, 3, 12) }}
+            style={styles.barcodeImgLarge}
             resizeMode="contain"
-            accessibilityLabel="QR del socio"
+            accessibilityLabel="Código de barras"
           />
-          <View style={styles.qrCaptionWrap}>
-            <Text style={styles.qrCaption}>Escanear</Text>
-          </View>
         </View>
+      </View>
 
-        <View style={styles.barcodeSide}>
-          <View style={[styles.barcodeBox, { height: QR_SIZE }]}>
-            <Image
-              source={{ uri: barcodeUrl(barcodeVal, 3, 12) }}
-              style={styles.barcodeImg}
-              resizeMode="contain"
-              accessibilityLabel="Código de barras"
-            />
-          </View>
+      {/* QR Code centrado y grande debajo del código de barras */}
+      <View style={styles.qrSection}>
+        <View style={styles.qrContainerLarge}>
+          <CarnetQRCode
+            dni={dni}
+            nombre={nombre}
+            apellido={apellido}
+            nroSocio={nroSocio}
+            size={240}
+            style={styles.qrCodeLarge}
+          />
         </View>
       </View>
     </View>
@@ -142,7 +190,7 @@ function CardInner({
 }
 
 /* ----- Estilos ----- */
-const GREEN = '#136F29';
+const GREEN = '#00973D'; // Verde más vibrante como en la imagen
 const BORDER = '#E6EBE8';
 
 const styles = StyleSheet.create({
@@ -188,18 +236,75 @@ const styles = StyleSheet.create({
     width: 180, height: 220, borderRadius: 14,
     borderColor: '#FFFFFF', borderWidth: 3, backgroundColor: '#123',
   },
+  photoPlaceholder: {
+    backgroundColor: '#E6EBE8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   info: { flex: 1, marginLeft: 14 },
   name: { color: '#101418', fontSize: 26, fontWeight: '900' },
-  dni: { marginTop: 6, color: '#2A2F35', fontSize: 16 },
+  nroSocio: { marginTop: 6, color: '#2A2F35', fontSize: 16, fontWeight: '600' },
+  dni: { marginTop: 4, color: '#2A2F35', fontSize: 16, fontWeight: '600' },
   valid: { marginTop: 2, color: '#55606B', fontSize: 14 },
 
+  // Nuevos estilos para código de barras centrado
+  barcodeSection: {
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  barcodeBoxCentered: {
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '90%',
+  },
+  barcodeImgLarge: { 
+    width: '100%', 
+    height: 80,
+  },
+  barcodeNumberLarge: {
+    fontSize: 14,
+    color: '#2A2F35',
+    fontWeight: '700',
+    marginTop: 6,
+    textAlign: 'center',
+    letterSpacing: 1,
+  },
+
+  // Nuevos estilos para QR centrado y grande
+  qrSection: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  qrContainerLarge: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#F8FAF8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+    width: 280,
+    height: 280,
+  },
+  qrCodeLarge: { 
+    width: '100%', 
+    height: '100%' 
+  },
+
+  // Estilos antiguos mantenidos para compatibilidad
   bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 6,
     gap: GAP,
   },
-  qrBox: {
+  qrContainer: {
     borderRadius: 14,
     overflow: 'hidden',
     backgroundColor: '#F8FAF8',
@@ -207,7 +312,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
   },
-  qrImg: { width: '100%', height: '100%' },
+  qrCode: { width: '100%', height: '100%' },
   qrCaptionWrap: {
     position: 'absolute',
     bottom: 6, left: 0, right: 0,
@@ -227,6 +332,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 10,
     justifyContent: 'center',
+    alignItems: 'center',
   },
-  barcodeImg: { width: '100%', height: '100%' },
+  barcodeImg: { width: '100%', height: 60 },
+  barcodeNumber: {
+    fontSize: 12,
+    color: '#2A2F35',
+    fontWeight: '600',
+    marginTop: 4,
+    textAlign: 'center',
+  },
 });

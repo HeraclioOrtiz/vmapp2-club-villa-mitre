@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../hooks/useAuth';
 import { COLORS } from '../constants/colors';
@@ -19,12 +19,39 @@ export default function GimnasioScreen() {
   const [weeklySchedule, setWeeklySchedule] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
+  const lastRefreshTime = useRef<number>(Date.now());
 
-  useEffect(() => {
-    if (user) {
-      loadAllData();
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        refreshData(true);
+        
+        const interval = setInterval(() => {
+          refreshData(false);
+        }, 60000);
+        
+        return () => clearInterval(interval);
+      }
+    }, [user])
+  );
+
+  const refreshData = async (isManual = false) => {
+    const now = Date.now();
+    if (!isManual && (now - lastRefreshTime.current < 60000)) {
+      return;
     }
-  }, [user]);
+    
+    try {
+      setIsAutoRefreshing(!isManual);
+      await loadAllData();
+      lastRefreshTime.current = now;
+    } catch (error) {
+      if (__DEV__) console.log('⚠️ Auto-refresh falló:', error);
+    } finally {
+      setIsAutoRefreshing(false);
+    }
+  };
 
   const loadAllData = async () => {
     if (!user) return;
@@ -118,6 +145,13 @@ export default function GimnasioScreen() {
           <Text style={styles.backButtonText}>Volver</Text>
         </TouchableOpacity>
       </View>
+
+      {isAutoRefreshing && (
+        <View style={styles.refreshIndicator}>
+          <ActivityIndicator size="small" color={COLORS.PRIMARY_GREEN} />
+          <Text style={styles.refreshText}>Actualizando...</Text>
+        </View>
+      )}
 
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Header con imagen del gimnasio */}
@@ -218,7 +252,7 @@ export default function GimnasioScreen() {
                   
                   {/* CTA Button */}
                   <View style={styles.todayWorkoutCTA}>
-                    <Text style={styles.todayWorkoutCTAText}>COMENZAR ENTRENAMIENTO</Text>
+                    <Text style={styles.todayWorkoutCTAText}>VER ENTRENAMIENTO</Text>
                     <Ionicons name="arrow-forward-circle" size={24} color={COLORS.WHITE} />
                   </View>
                 </TouchableOpacity>
@@ -289,9 +323,9 @@ export default function GimnasioScreen() {
                       <Ionicons name="chevron-forward" size={20} color={COLORS.TEXT_DISABLED} />
                     </View>
                     <View style={styles.assignmentDays}>
-                      {assignment.assigned_days.map((day) => (
+                      {assignment.assigned_days.map((day, dayIndex) => (
                         <View 
-                          key={day} 
+                          key={`${assignment.id}-${day}-${dayIndex}`} 
                           style={[
                             styles.dayBadge,
                             getTodayAssignments().some(a => a.id === assignment.id) && day === gymService.getTodayWeekday() && styles.dayBadgeActive
@@ -299,9 +333,9 @@ export default function GimnasioScreen() {
                         >
                           <Text style={[
                             styles.dayBadgeText,
-                            getTodayAssignments().some(a => a.id === assignment.id) && day === gymService.getTodayWeekday() && styles.dayBadgeTextActive
+                            getTodayAssignments().some(a => a.id === assignment.id) && day === gymService.getTodayWeekday() && styles.dayBadgeActiveText
                           ]}>
-                            {gymService.getWeekdaySpanish(day).substring(0, 3)}
+                            {gymService.getDayShortName(day)}
                           </Text>
                         </View>
                       ))}
@@ -688,6 +722,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.PRIMARY_GREEN,
     borderColor: COLORS.PRIMARY_GREEN,
   },
+  dayBadgeActiveText: {
+    color: COLORS.WHITE,
+    fontWeight: '700',
+  },
   dayBadgeText: {
     fontSize: 12,
     fontWeight: '600',
@@ -890,5 +928,18 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     marginRight: 8,
     flex: 1,
+  },
+  refreshIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    backgroundColor: COLORS.PRIMARY_GREEN + '15',
+    gap: 8,
+  },
+  refreshText: {
+    fontSize: 12,
+    color: COLORS.PRIMARY_GREEN,
+    fontWeight: '600',
   },
 });

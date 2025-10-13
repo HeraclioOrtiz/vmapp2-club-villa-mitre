@@ -424,6 +424,24 @@ class GymService {
     };
     return daysMap[day];
   }
+
+  /**
+   * Get short day name (3 letters)
+   * @param day English weekday name
+   * @returns Short Spanish weekday name
+   */
+  getDayShortName(day: WeekDay): string {
+    const shortDaysMap: Record<WeekDay, string> = {
+      monday: 'LUN',
+      tuesday: 'MAR',
+      wednesday: 'MIÉ',
+      thursday: 'JUE',
+      friday: 'VIE',
+      saturday: 'SÁB',
+      sunday: 'DOM'
+    };
+    return shortDaysMap[day];
+  }
   
   /**
    * Format duration in human readable format

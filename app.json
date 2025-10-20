@@ -38,7 +38,7 @@
     },
     "android": {
       "package": "com.villamitre.vmapp2",
-      "versionCode": 4,
+      "versionCode": 9,
       "icon": "./assets/cvm-escudo-para-fondo-blanco.png",
       "edgeToEdgeEnabled": true,
       "screenOrientation": "portrait",
@@ -47,6 +47,17 @@
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "CAMERA"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "https",
+              "host": "wa.me"
+            }
+          ]
+        }
       ]
     },
     "web": {
@@ -78,7 +89,8 @@
             }
           }
         }
-      ]
+      ],
+      "./plugins/withAndroidQueries.js"
     ]
   }
 }

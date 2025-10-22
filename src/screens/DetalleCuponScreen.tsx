@@ -3,15 +3,28 @@ import {
   View, Text, StyleSheet, TouchableOpacity, Modal, Image,
   ActivityIndicator, Platform, ScrollView, Alert
 } from "react-native";
-import { useAppSelector } from "../hooks/redux";
 
-// ErrorBoundary igual que antes…
-type EBProps = { fallback?: React.ReactNode; children?: React.ReactNode };
-type EBState = { hasError: boolean; err?: any };
+// ========== Error Boundary (tipado correcto) ==========
+type EBProps = {
+  fallback?: React.ReactNode;
+  children?: React.ReactNode;
+};
+type EBState = {
+  hasError: boolean;
+  err?: any;
+};
+
 class ErrorBoundary extends React.Component<EBProps, EBState> {
   state: EBState = { hasError: false, err: null };
-  static getDerivedStateFromError(error: any): EBState { return { hasError: true, err: error }; }
-  componentDidCatch(error: any, info: any) { console.log("[EB] Caught:", error?.message, info?.componentStack); }
+
+  static getDerivedStateFromError(error: any): EBState {
+    return { hasError: true, err: error };
+  }
+
+  componentDidCatch(error: any, info: any) {
+    console.log("[EB] Caught:", error?.message, info?.componentStack);
+  }
+
   render(): React.ReactNode {
     if (this.state.hasError) {
       return this.props.fallback ?? (
@@ -26,7 +39,7 @@ class ErrorBoundary extends React.Component<EBProps, EBState> {
   }
 }
 
-// QR opcional
+// ===== CARGA OPCIONAL DEL QR (sin esto no crashea) =====
 let QRCodeComp: any = null;
 try {
   const qrPkg = require("react-native-qrcode-svg");
@@ -36,116 +49,121 @@ try {
 }
 
 const API_BASE = "https://surtekbb.com";
-const USER_ID_FALLBACK = 123;
-
-type Cupon = {
-  id: string | number;
-  titulo?: string;
-  descripcion?: string;
-  validoHasta?: string;
-  categoria?: string;
-  imagenUrl?: string;
-  comercio?: string;
-};
-type DetalleParams = { cupon?: Cupon; action?: "generateQR" | string };
+// TODO: reemplazar por tu userId real (desde tu auth/contexto)
+const USER_ID  = 123;
 
 export default function DetalleCuponScreen({ route }: any) {
-  const { cupon, action } = (route?.params ?? {}) as DetalleParams;
-
-  // ✅ sin useAuth: leo auth del slice directamente
-  const auth: any = useAppSelector((s) => s.auth);
-  const token: string | null =
-    auth?.token ?? auth?.accessToken ?? auth?.user?.token ?? auth?.user?.access_token ?? null;
-  const userIdNum = Number(auth?.user?.id ?? auth?.user?.uid ?? auth?.userId ?? USER_ID_FALLBACK);
-
+  const { cupon } = route.params || {};
   const [modalVisible, setModalVisible] = useState(false);
+
   const [qrLoading, setQrLoading] = useState(false);
-  const [qrValue, setQrValue] = useState<string>("");
-  const [qrCodeText, setQrCodeText] = useState<string>("");
+  const [qrValue, setQrValue] = useState<string>('');
+  const [qrCodeText, setQrCodeText] = useState<string>('');
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number>(0);
-  const [lastRawError, setLastRawError] = useState<string>("");
+  const [lastRawError, setLastRawError] = useState<string>('');
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const openedRef = useRef(false);
 
-  const clearTimer = () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } };
-  useEffect(() => () => clearTimer(), []);
-
-  useEffect(() => {
-    if (action === "generateQR" && !openedRef.current) {
-      openedRef.current = true;
-      openModal();
+  const clearTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+      console.log('[QR] Countdown detenido');
     }
-  }, [action]);
+  };
+
+  useEffect(() => () => clearTimer(), []);
 
   const startCountdown = (expISO?: string, secondsFromServer?: number) => {
     clearTimer();
     let start = 0;
     if (expISO) start = Math.max(0, Math.floor((new Date(expISO).getTime() - Date.now()) / 1000));
-    else if (typeof secondsFromServer === "number") start = Math.max(0, Math.floor(secondsFromServer));
+    else if (typeof secondsFromServer === 'number') start = Math.max(0, Math.floor(secondsFromServer));
     else start = 3600;
     setSecondsLeft(start);
+    console.log('[QR] Countdown iniciado →', { start });
     timerRef.current = setInterval(() => {
-      setSecondsLeft((prev) => (prev <= 1 ? (clearTimer(), 0) : prev - 1));
+      setSecondsLeft(prev => {
+        if (prev <= 1) { clearTimer(); return 0; }
+        return prev - 1;
+      });
     }, 1000);
   };
 
   const claimQr = async () => {
     try {
       if (!QRCodeComp) {
-        Alert.alert("QR no disponible", "Instalá react-native-svg y react-native-qrcode-svg.");
+        const msg = 'QR no disponible (instalá react-native-svg y react-native-qrcode-svg).';
+        console.log('[QR][ERROR]', msg);
+        Alert.alert('QR no disponible', msg);
         return;
       }
+
       setQrLoading(true);
-      setQrValue(""); setQrCodeText(""); setSecondsLeft(0); setLastRawError("");
+      setQrValue(''); setQrCodeText(''); setExpiresAt(null); setSecondsLeft(0); setLastRawError('');
 
       const promoId = Number(cupon?.id);
-      if (!Number.isInteger(promoId)) { Alert.alert("Cupón inválido", "ID de promoción inválido."); return; }
-      if (!Number.isInteger(userIdNum)) { Alert.alert("Sesión requerida", "Falta user_id numérico."); return; }
+      if (!Number.isInteger(promoId)) {
+        console.log('[QR][ERROR] ID de promoción inválido. cupon=', cupon);
+        Alert.alert('Cupón inválido', 'ID de promoción inválido.');
+        return;
+      }
+      const userId = Number(USER_ID);
+      if (!Number.isInteger(userId)) {
+        Alert.alert('Sesión requerida', 'Falta user_id numérico o no estás logueado.');
+        return;
+      }
 
       const url = `${API_BASE}/api/v1/promotions/${promoId}/claim-qr`;
-      const payload = { user_id: userIdNum, device: `rn-${Platform.OS}` };
+      const payload = { user_id: userId, device: `rn-${Platform.OS}` };
+      console.log('[QR][REQUEST] POST', url, 'payload:', payload);
 
       let res: Response;
       try {
         res = await fetch(url, {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
       } catch (netErr: any) {
-        Alert.alert("Sin conexión", `${netErr?.message || "Network request failed"}`);
+        console.log('[QR][NETWORK] Error →', netErr?.message || netErr);
+        Alert.alert('Sin conexión', `No se pudo conectar a:\n${url}\n\nDetalle: ${netErr?.message || 'Network request failed'}`);
         return;
       }
 
-      const ct = res.headers?.get?.("content-type") || "";
-      const isJson = ct.includes("application/json");
+      const ct = res.headers?.get?.('content-type') || '';
+      const isJson = ct.includes('application/json');
+      console.log('[QR][RESPONSE] status:', res.status, res.ok, 'CT:', ct);
+
       const raw = await res.text();
       if (!isJson) setLastRawError(raw.slice(0, 500));
+      console.log('[QR][RESPONSE] raw (0..500):', raw.slice(0, 500));
 
       let data: any = {};
-      try { data = raw ? JSON.parse(raw) : {}; } catch {}
+      try { data = raw ? JSON.parse(raw) : {}; }
+      catch (e: any) { console.log('[QR][WARN] JSON parse:', e?.message); }
 
-      const hasQrVal = typeof data?.qr_value === "string" && data.qr_value.length > 0;
-      const hasCode = typeof data?.code === "string" && data.code.length > 0;
+      const hasQrVal = typeof data?.qr_value === 'string' && data.qr_value.length > 0;
+      const hasCode  = typeof data?.code === 'string' && data.code.length > 0;
 
-      if (!res.ok || data?.status !== "ok" || !(hasQrVal || hasCode)) {
-        Alert.alert("No se pudo generar el QR", isJson ? (data?.message || `HTTP ${res.status}`) : "Respuesta no-JSON");
+      if (!res.ok || data?.status !== 'ok' || !(hasQrVal || hasCode)) {
+        const reason = !isJson ? `Respuesta no-JSON (posible HTML/redirect)` : (data?.message || `HTTP ${res.status}`);
+        console.log('[QR][ERROR] Claim falló →', reason, 'data:', data);
+        Alert.alert('No se pudo generar el QR', reason);
         return;
       }
 
-      const encodeValueRaw = String((data.qr_value ?? data.code) || "").trim();
-      const encodeValue = encodeValueRaw.replace(/^http:\/\//i, "https://");
+      const encodeValueRaw = String((data.qr_value ?? data.code) || '').trim();
+      const encodeValue = encodeValueRaw.replace(/^http:\/\//i, 'https://');
       setQrValue(encodeValue);
       if (hasCode) setQrCodeText(String(data.code));
+      setExpiresAt(data.expires_at ?? null);
       startCountdown(data.expires_at, data.seconds_left);
     } catch (e: any) {
-      Alert.alert("No se pudo generar el QR", e?.message ?? "Error inesperado");
-      setQrValue(""); setQrCodeText(""); setSecondsLeft(0);
+      console.log('[QR][CATCH] Error en claim:', e?.message, e);
+      setQrValue(''); setQrCodeText(''); setExpiresAt(null); setSecondsLeft(0);
+      Alert.alert('No se pudo generar el QR', e?.message ?? 'Error inesperado');
     } finally {
       setQrLoading(false);
     }
@@ -157,43 +175,22 @@ export default function DetalleCuponScreen({ route }: any) {
 
   const formatTime = (sec: number) => {
     const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
-    return h > 0 ? `${h}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}` : `${m}:${s.toString().padStart(2,"0")}`;
+    return h > 0 ? `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}` : `${m}:${s.toString().padStart(2,'0')}`;
   };
-  const formatFechaCorta = (input?: string): string => {
-    if (!input || input.trim() === "-") return "-";
-    let d: Date | null = null;
-    if (/^\d{13}$/.test(input)) d = new Date(Number(input));
-    else if (/^\d{10}$/.test(input)) d = new Date(Number(input) * 1000);
-    else {
-      const s = input.includes("T") ? input : input.replace(" ", "T");
-      const tmp = new Date(s);
-      d = isNaN(tmp.getTime()) ? null : tmp;
-    }
-    if (!d) return input;
-    const fmt = new Intl.DateTimeFormat("es-AR", { day: "2-digit", month: "short", year: "numeric" }).format(d);
-    return fmt.replace(/\./g, "");
-  };
-
-  if (!cupon) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <Text style={{ fontSize: 16, marginBottom: 12 }}>No recibí la promoción a mostrar.</Text>
-      </View>
-    );
-  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <ImageWithLoader uri={cupon?.imagenUrl} style={styles.image} />
-      <Text style={styles.title}>{cupon?.titulo ?? "Promoción"}</Text>
-      {!!cupon?.comercio && <Text style={styles.comercio}>{cupon.comercio}</Text>}
-      {!!cupon?.descripcion && <Text style={styles.desc}>{cupon.descripcion}</Text>}
-      <Text style={styles.valid}>Válido hasta: {formatFechaCorta(cupon?.validoHasta)}</Text>
+
+      <Text style={styles.title}>{cupon?.titulo}</Text>
+      <Text style={styles.desc}>{cupon?.descripcion}</Text>
+      <Text style={styles.valid}>Válido hasta: {cupon?.validoHasta}</Text>
 
       <TouchableOpacity style={styles.button} onPress={openModal}>
         <Text style={styles.buttonText}>Obtener Cupón</Text>
       </TouchableOpacity>
 
+      {/* Modal con QR */}
       <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={closeModal}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -207,7 +204,11 @@ export default function DetalleCuponScreen({ route }: any) {
             ) : qrValue ? (
               <>
                 {QRCodeComp ? (
-                  <ErrorBoundary>
+                  <ErrorBoundary fallback={
+                    <Text style={{ color: '#a00', textAlign:'center' }}>
+                      No se pudo renderizar el código QR (verificá react-native-svg).
+                    </Text>
+                  }>
                     <QRCodeComp key={qrValue} value={qrValue} size={220} backgroundColor="white" />
                   </ErrorBoundary>
                 ) : (
@@ -215,9 +216,11 @@ export default function DetalleCuponScreen({ route }: any) {
                     QR no disponible (falta react-native-qrcode-svg / react-native-svg)
                   </Text>
                 )}
+
                 <Text selectable style={{ marginTop: 8, fontSize: 12, textAlign: 'center' }}>
                   {qrCodeText || qrValue}
                 </Text>
+
                 <Text style={styles.timer}>
                   Expira en: <Text style={styles.timerStrong}>{formatTime(secondsLeft)}</Text>
                 </Text>
@@ -228,6 +231,11 @@ export default function DetalleCuponScreen({ route }: any) {
             ) : (
               <View style={{ alignItems: 'center' }}>
                 <Text>No se pudo generar el QR.</Text>
+                {lastRawError ? (
+                  <Text selectable style={{ marginTop: 8, fontSize: 10, color: '#a00' }}>
+                    (Debug) Respuesta no-JSON: {lastRawError}
+                  </Text>
+                ) : null}
                 <TouchableOpacity style={[styles.button, { marginTop: 10 }]} onPress={regenerate}>
                   <Text style={styles.buttonText}>Reintentar</Text>
                 </TouchableOpacity>
@@ -244,7 +252,7 @@ export default function DetalleCuponScreen({ route }: any) {
   );
 }
 
-// ===== Imagen con loader =====
+// ===== Imagen con loader + placeholder =====
 const PLACEHOLDER = "https://picsum.photos/seed/promo/800/450";
 const ImageWithLoader: React.FC<{ uri?: string; style: any }> = ({ uri, style }) => {
   const [loading, setLoading] = useState(true);
@@ -256,7 +264,7 @@ const ImageWithLoader: React.FC<{ uri?: string; style: any }> = ({ uri, style })
         source={{ uri: src }}
         style={style}
         onLoadEnd={() => setLoading(false)}
-        onError={() => { setSrc(PLACEHOLDER); setLoading(false); }}
+        onError={(e) => { console.log('[IMG] error→', src, e?.nativeEvent); setSrc(PLACEHOLDER); setLoading(false); }}
       />
     </View>
   );
@@ -265,8 +273,7 @@ const ImageWithLoader: React.FC<{ uri?: string; style: any }> = ({ uri, style })
 const styles = StyleSheet.create({
   container: { padding: 20, alignItems: "center" },
   image: { width: "100%", height: 180, borderRadius: 10, marginBottom: 20 },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 4, textAlign: "center" },
-  comercio: { fontSize: 15, color: "#666", marginBottom: 10, textAlign: "center" },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 10, textAlign: 'center' },
   desc: { fontSize: 16, textAlign: "center", marginBottom: 10 },
   valid: { fontSize: 14, color: "#888", marginBottom: 20 },
   button: { backgroundColor: "#4CAF50", paddingHorizontal: 20, paddingVertical: 12, borderRadius: 10, marginBottom: 20 },

@@ -49,37 +49,64 @@
           "CAMERA"
         ]
       },
-      "web": {
-        "favicon": "./assets/cvm-escudo-para-fondo-blanco.png",
-        "bundler": "metro"
-      },
-      "extra": {
-        "USE_MIRAGE_SERVER": false,
-        "API_BASE_URL": "https://appvillamitre.surtekbb.com/api",
-        "DEBUG_API_CONNECTIVITY": false,
-        "eas": {
-          "projectId": "734fb05a-ed84-4160-8b50-72e3f5fd92fa"
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.villamitre.vmapp2",
+      "versionCode": 9,
+      "icon": "./assets/cvm-escudo-para-fondo-blanco.png",
+      "edgeToEdgeEnabled": true,
+      "screenOrientation": "portrait",
+      "softwareKeyboardLayoutMode": "resize",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "https",
+              "host": "wa.me"
+            }
+          ]
         }
-      },
-      "updates": {
-        "url": "https://u.expo.dev/bd5be84d-3bc6-4513-93b3-a324eeb9de34"
-      },
-      "runtimeVersion": {
-        "policy": "appVersion"
-      },
-      "plugins": [
-        [
-          "expo-build-properties",
-          {
-            "android": {
-              "usesCleartextTraffic": false,
-              "extraPropertiesGradle": {
-                "android.enableJetifier": true
-              }
+      ]
+    },
+    "web": {
+      "favicon": "./assets/cvm-escudo-para-fondo-blanco.png",
+      "bundler": "metro"
+    },
+    "extra": {
+      "USE_MIRAGE_SERVER": false,
+      "API_BASE_URL": "https://appvillamitre.surtekbb.com/api",
+      "DEBUG_API_CONNECTIVITY": false,
+      "eas": {
+        "projectId": "bd5be84d-3bc6-4513-93b3-a324eeb9de34"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/bd5be84d-3bc6-4513-93b3-a324eeb9de34"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": false,
+            "extraPropertiesGradle": {
+              "android.enableJetifier": true
             }
           }
-        ]
+        }
       ],
-      "owner": "javier_alejandro"
-    }
+      "./plugins/withAndroidQueries.js"
+    ]
   }

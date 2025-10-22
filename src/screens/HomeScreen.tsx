@@ -17,14 +17,9 @@ import MisBeneficiosScreen from './MisBeneficiosScreen';
 import EstadoDeCuentaScreen from './EstadoDeCuentaScreen';
 import MiCarnetScreen from './MiCarnetScreen';
 import QRBeneficioScreen from './QRBeneficioScreen';
-import { 
-  DailyWorkoutScreen, 
-  TemplatesListScreen, 
-  GymDashboardScreen, 
-  WeeklyCalendarScreen,
-  ActiveWorkoutScreen,
-  WorkoutSummaryScreen 
-} from './gym';
+import GimnasioScreen from './GimnasioScreen'; // ✅ Pantalla principal del gimnasio
+import TemplateDetailScreen from './gym/TemplateDetailScreen'; // ✅ Detalle de rutina
+import WeeklyScheduleScreen from './gym/WeeklyScheduleScreen'; // ✅ Calendario semanal
 
 // 👇 Importá tu pantalla de cupones (ajustá la ruta si hace falta)
 import MisCuponesScreen from './MisCuponesScreen';
@@ -202,44 +197,31 @@ export default function HomeScreen() {
       />
       <Drawer.Screen name="Actividades" component={ActividadesScreen} />
       <Drawer.Screen name="CentroDeportivo" component={CentroDeportivoScreen} />
+      
+      {/* ✅ Gimnasio - Pantalla Principal (API v2.0) */}
+      <Drawer.Screen 
+        name="Gimnasio" 
+        component={GimnasioScreen}
+        options={{ headerTitle: 'GIMNASIO' }}
+      />
+      
+      {/* ✅ Detalle de Rutina */}
+      <Drawer.Screen 
+        name="TemplateDetails" 
+        component={TemplateDetailScreen}
+        options={{ headerTitle: 'Detalle de Rutina' }}
+      />
+      
+      {/* ✅ Calendario Semanal */}
+      <Drawer.Screen 
+        name="WeeklySchedule" 
+        component={WeeklyScheduleScreen}
+        options={{ headerTitle: 'Calendario Semanal' }}
+      />
+      
       <Drawer.Screen name="AreasInstitucionales" component={AreasInstitucionalesScreen} />
       <Drawer.Screen name="Servicios" component={ServiciosScreen} />
       <Drawer.Screen name="MisPuntos" component={MisPuntosScreen} />
-
-      {/* New Gym Screens */}
-      <Drawer.Screen 
-        name="GymDashboard" 
-        component={GymDashboardScreen}
-        options={{ headerTitle: 'DASHBOARD GYM' }}
-      />
-      <Drawer.Screen 
-        name="TemplatesList" 
-        component={TemplatesListScreen}
-        options={{ headerTitle: 'MIS PLANTILLAS' }}
-      />
-      <Drawer.Screen 
-        name="DailyWorkout" 
-        component={DailyWorkoutScreen}
-        options={{ headerTitle: 'ENTRENAMIENTO' }}
-      />
-      <Drawer.Screen 
-        name="WeeklyCalendar" 
-        component={WeeklyCalendarScreen}
-        options={{ headerTitle: 'CALENDARIO SEMANAL' }}
-      />
-
-      {/* Entrenamiento activo */}
-      <Drawer.Screen 
-        name="ActiveWorkout" 
-        component={ActiveWorkoutScreen}
-        options={{ headerTitle: 'ENTRENAMIENTO ACTIVO', headerShown: false }}
-      />
-      <Drawer.Screen 
-        name="WorkoutSummary" 
-        component={WorkoutSummaryScreen}
-        options={{ headerTitle: 'RESUMEN', headerShown: false }}
-      />
-
       <Drawer.Screen name="QRBeneficio" component={QRBeneficioScreen} />
       <Drawer.Screen name="MisBeneficios" component={MisBeneficiosScreen} />
       <Drawer.Screen name="EstadoDeCuenta" component={EstadoDeCuentaScreen} />

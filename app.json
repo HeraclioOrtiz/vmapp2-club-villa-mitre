@@ -1,52 +1,35 @@
-  {
-    "expo": {
-      "name": "Villa Mitre App",
-      "slug": "villa-mitre-app",
-      "version": "1.0.0",
-      "orientation": "portrait",
-      "icon": "./assets/cvm-escudo-para-fondo-blanco.png",
-      "userInterfaceStyle": "light",
-      "platforms": [
-        "ios",
-        "android"
-      ],
-      "splash": {
-        "image": "./assets/cvm-escudo-para-fondo-blanco.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff"
-      },
-      "assetBundlePatterns": [
-        "**/*"
-      ],
-      "ios": {
-        "supportsTablet": true,
-        "bundleIdentifier": "com.villamitre.vmapp2",
-        "buildNumber": "1",
-        "requireFullScreen": true,
-        "infoPlist": {
-          "NSLocationWhenInUseUsageDescription": "Esta aplicación necesita acceso a la ubicación para mostrar mapas y funcionalidades relacionadas con la ubicación.",
-          "NSCameraUsageDescription": "Esta aplicación necesita acceso a la cámara para escanear códigos QR.",
-          "NSPhotoLibraryUsageDescription": "Esta aplicación necesita acceso a la galería de fotos para seleccionar imágenes.",
-          "UIInterfaceOrientation": "UIInterfaceOrientationPortrait",
-          "UISupportedInterfaceOrientations": [
-            "UIInterfaceOrientationPortrait"
-          ]
-        },
-        "config": {
-          "usesNonExemptEncryption": false
-        }
-      },
-      "android": {
-        "package": "com.villamitre.vmapp2",
-        "versionCode": 4,
-        "icon": "./assets/cvm-escudo-para-fondo-blanco.png",
-        "edgeToEdgeEnabled": true,
-        "screenOrientation": "portrait",
-        "softwareKeyboardLayoutMode": "resize",
-        "permissions": [
-          "ACCESS_COARSE_LOCATION",
-          "ACCESS_FINE_LOCATION",
-          "CAMERA"
+{
+  "expo": {
+    "name": "Villa Mitre App",
+    "slug": "villa-mitre-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/cvm-escudo-para-fondo-blanco.png",
+    "userInterfaceStyle": "light",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "splash": {
+      "image": "./assets/cvm-escudo-para-fondo-blanco.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.villamitre.vmapp2",
+      "buildNumber": "1",
+      "requireFullScreen": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Esta aplicación necesita acceso a la ubicación para mostrar mapas y funcionalidades relacionadas con la ubicación.",
+        "NSCameraUsageDescription": "Esta aplicación necesita acceso a la cámara para escanear códigos QR.",
+        "NSPhotoLibraryUsageDescription": "Esta aplicación necesita acceso a la galería de fotos para seleccionar imágenes.",
+        "UIInterfaceOrientation": "UIInterfaceOrientationPortrait",
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait"
         ]
       },
       "config": {
@@ -110,3 +93,4 @@
       "./plugins/withAndroidQueries.js"
     ]
   }
+}

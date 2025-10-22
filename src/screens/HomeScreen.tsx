@@ -21,9 +21,6 @@ import GimnasioScreen from './GimnasioScreen'; // ✅ Pantalla principal del gim
 import TemplateDetailScreen from './gym/TemplateDetailScreen'; // ✅ Detalle de rutina
 import WeeklyScheduleScreen from './gym/WeeklyScheduleScreen'; // ✅ Calendario semanal
 
-// 👇 Importá tu pantalla de cupones (ajustá la ruta si hace falta)
-import MisCuponesScreen from './MisCuponesScreen';
-
 const Drawer = createDrawerNavigator();
 
 // Contenido personalizado del Drawer
@@ -33,8 +30,9 @@ function CustomDrawerContent(props: any) {
   // Función para verificar si el usuario tiene acceso a una funcionalidad
   const hasAccess = (feature: string): boolean => {
     if (!user) return false;
+    
     const userType = user.user_type;
-
+    
     switch (feature) {
       case 'home':
         return true; // Todos tienen acceso a Home
@@ -50,11 +48,10 @@ function CustomDrawerContent(props: any) {
       case 'estado_cuenta':
         return userType === 'api'; // Solo usuarios API
       case 'actividades':
-        return false; // Temporalmente deshabilitado
       case 'cupones':
-        return true; // ✅ Habilitado para locales y API
+        return false; // Temporalmente deshabilitado para todos
       default:
-        return true;
+        return false;
     }
   };
 
@@ -63,17 +60,26 @@ function CustomDrawerContent(props: any) {
       'Cerrar Sesión',
       '¿Estás seguro que deseas cerrar sesión?',
       [
-        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
         {
           text: 'Cerrar Sesión',
           style: 'destructive',
           onPress: async () => {
             try {
+              // Ejecutar logout del servicio de autenticación
               await logout();
+              
+              // Navegar de vuelta a la pantalla de login
               props.navigation.dispatch(
-                CommonActions.reset({ index: 0, routes: [{ name: 'Login' }] })
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'Login' }],
+                })
               );
-            } catch {
+            } catch (error) {
               Alert.alert('Error', 'No se pudo cerrar la sesión correctamente');
             }
           },
@@ -93,7 +99,7 @@ function CustomDrawerContent(props: any) {
         />
       )}
 
-      {/* Actividades Deportivas */}
+      {/* Actividades Deportivas - Solo usuarios API */}
       {hasAccess('actividades_deportivas') && (
         <DrawerItem
           label="Actividades Deportivas"
@@ -102,7 +108,7 @@ function CustomDrawerContent(props: any) {
         />
       )}
 
-      {/* Centro Deportivo */}
+      {/* Centro Deportivo - Solo usuarios API */}
       {hasAccess('centro_deportivo') && (
         <DrawerItem
           label="Centro Deportivo"
@@ -111,7 +117,7 @@ function CustomDrawerContent(props: any) {
         />
       )}
 
-      {/* Áreas Institucionales */}
+      {/* Áreas Institucionales - Solo usuarios API */}
       {hasAccess('areas_institucionales') && (
         <DrawerItem
           label="Áreas Institucionales"
@@ -120,7 +126,7 @@ function CustomDrawerContent(props: any) {
         />
       )}
 
-      {/* Servicios */}
+      {/* Servicios - Solo usuarios API */}
       {hasAccess('servicios') && (
         <DrawerItem
           label="Servicios"
@@ -129,21 +135,13 @@ function CustomDrawerContent(props: any) {
         />
       )}
 
-      {/* Mis Puntos */}
+
+      {/* Mis Puntos - Solo usuarios API */}
       {hasAccess('mis_puntos') && (
         <DrawerItem
           label="Mis Puntos"
           icon={() => <Ionicons name="star-outline" size={22} />}
           onPress={() => props.navigation.navigate('MisPuntos')}
-        />
-      )}
-
-      {/* ✅ Mis Cupones */}
-      {hasAccess('cupones') && (
-        <DrawerItem
-          label="Mis Cupones"
-          icon={() => <Ionicons name="pricetags-outline" size={22} />}
-          onPress={() => props.navigation.navigate('MisCupones')}
         />
       )}
 
@@ -166,7 +164,10 @@ export default function HomeScreen() {
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={({ navigation }) => ({ 
         headerShown: true,
-        headerStyle: { backgroundColor: '#00973D', height: 110 },
+        headerStyle: {
+          backgroundColor: '#00973D',
+          height: 110,
+        },
         headerTintColor: '#FFFFFF',
         headerTitleStyle: {
           fontFamily: 'BarlowCondensed-Bold',
@@ -176,7 +177,7 @@ export default function HomeScreen() {
           marginLeft: 0,
           textAlign: 'center',
           textTransform: 'uppercase',
-          color: '#FFFFFF',
+          color: '#FFFFFF', // Cambiado a blanco
         },
         headerTitle: 'CLUB VILLA MITRE',
         headerRight: () => (
@@ -223,16 +224,10 @@ export default function HomeScreen() {
       <Drawer.Screen name="Servicios" component={ServiciosScreen} />
       <Drawer.Screen name="MisPuntos" component={MisPuntosScreen} />
       <Drawer.Screen name="QRBeneficio" component={QRBeneficioScreen} />
+      {/* Pantallas mantenidas para compatibilidad con navegación desde Home */}
       <Drawer.Screen name="MisBeneficios" component={MisBeneficiosScreen} />
       <Drawer.Screen name="EstadoDeCuenta" component={EstadoDeCuentaScreen} />
       <Drawer.Screen name="MiCarnet" component={MiCarnetScreen} />
-
-      {/* ✅ Nueva ruta: Mis Cupones */}
-      <Drawer.Screen 
-        name="MisCupones" 
-        component={MisCuponesScreen}
-        options={{ headerTitle: 'MIS CUPONES' }}
-      />
     </Drawer.Navigator>
   );
 }

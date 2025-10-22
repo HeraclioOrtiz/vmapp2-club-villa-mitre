@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useRef } from 'react';
+=======
+import React, { useState, useEffect } from 'react';
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions, ActivityIndicator, Image, ScrollView } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,15 +20,22 @@ type Beneficio = {
   imagenUrl: string;
 };
 
+<<<<<<< HEAD
 type RouteParams = { beneficio: Beneficio };
 
 const API_BASE = 'https://surtekbb.com';
 const USER_ID = 'USER_ID_REAL_O_TOMAR_DE_AUTH';
+=======
+type RouteParams = {
+  beneficio: Beneficio;
+};
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
 
 export default function QRBeneficioScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const { beneficio } = route.params as RouteParams;
+<<<<<<< HEAD
 
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [qrValue, setQrValue] = useState<string>('');
@@ -122,6 +133,82 @@ export default function QRBeneficioScreen() {
   };
 
   const handleGoBack = () => navigation.goBack();
+=======
+  const [timeRemaining, setTimeRemaining] = useState(3600); // 1 hora en segundos
+  const [qrValue, setQrValue] = useState('');
+  const [isQrReady, setIsQrReady] = useState(false);
+
+  useEffect(() => {
+    // Generar valor único del QR con timestamp
+    const timestamp = Date.now();
+    const qrData = {
+      beneficioId: beneficio.id,
+      comercio: beneficio.comercio,
+      descuento: beneficio.descuento,
+      timestamp: timestamp,
+      validUntil: timestamp + (60 * 60 * 1000), // Válido por 1 hora
+      userId: 'USER_ID_PLACEHOLDER' // En producción sería el ID real del usuario
+    };
+    setQrValue(JSON.stringify(qrData));
+    setIsQrReady(true);
+
+    // Timer para countdown
+    const timer = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          Alert.alert(
+            'QR Expirado',
+            'Este código QR ha expirado. Genera uno nuevo para usar el beneficio.',
+            [
+              {
+                text: 'Generar Nuevo',
+                onPress: () => {
+                  // Regenerar QR
+                  const newTimestamp = Date.now();
+                  const newQrData = {
+                    beneficioId: beneficio.id,
+                    comercio: beneficio.comercio,
+                    descuento: beneficio.descuento,
+                    timestamp: newTimestamp,
+                    validUntil: newTimestamp + (60 * 60 * 1000),
+                    userId: 'USER_ID_PLACEHOLDER'
+                  };
+                  setQrValue(JSON.stringify(newQrData));
+                  setTimeRemaining(3600);
+                  setIsQrReady(true);
+                }
+              },
+              {
+                text: 'Volver',
+                onPress: () => navigation.goBack()
+              }
+            ]
+          );
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [beneficio, navigation]);
+
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
 
   const screenWidth = Dimensions.get('window').width;
   const qrSize = Math.min(screenWidth * 0.7, 280);
@@ -137,8 +224,17 @@ export default function QRBeneficioScreen() {
         <View style={styles.placeholder} />
       </View>
 
+<<<<<<< HEAD
       {/* Content */}
       <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+=======
+      {/* Content with ScrollView */}
+      <ScrollView 
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
         {/* Beneficio Info */}
         <View style={styles.beneficioInfo}>
           <View style={styles.categoriaTag}>
@@ -148,6 +244,7 @@ export default function QRBeneficioScreen() {
           <Text style={styles.descuentoText}>{beneficio.descuento}</Text>
         </View>
 
+<<<<<<< HEAD
         {/* QR */}
         <View style={styles.qrContainer}>
           <View style={styles.qrWrapper}>
@@ -171,10 +268,35 @@ export default function QRBeneficioScreen() {
                   ]}
                 >
                   <Image source={require('../../assets/cvm-escudo-para-fondo-blanco.png')} style={styles.logoImage} resizeMode="contain" />
+=======
+        {/* QR Code Container */}
+        <View style={styles.qrContainer}>
+          <View style={styles.qrWrapper}>
+            {isQrReady && qrValue ? (
+              <View style={styles.qrWithLogo}>
+                <QRCode
+                  value={qrValue}
+                  size={qrSize}
+                  color={COLORS.PRIMARY_BLACK}
+                  backgroundColor={COLORS.WHITE}
+                />
+                <View style={[styles.logoOverlay, { 
+                  width: qrSize * 0.12, 
+                  height: qrSize * 0.12,
+                  top: (qrSize - qrSize * 0.12) / 2,
+                  left: (qrSize - qrSize * 0.12) / 2,
+                }]}>
+                  <Image
+                    source={require('../../assets/cvm-escudo-para-fondo-blanco.png')}
+                    style={styles.logoImage}
+                    resizeMode="contain"
+                  />
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
                 </View>
               </View>
             ) : (
               <View style={[styles.qrPlaceholder, { width: qrSize, height: qrSize }]}>
+<<<<<<< HEAD
                 <Ionicons name="warning-outline" size={22} color={COLORS.WARNING} />
                 <Text style={styles.loadingText}>No se pudo generar el QR</Text>
                 <TouchableOpacity style={{ marginTop: 10 }} onPress={claimQr}>
@@ -184,6 +306,14 @@ export default function QRBeneficioScreen() {
             )}
           </View>
 
+=======
+                <ActivityIndicator size="large" color={COLORS.PRIMARY_GREEN} />
+                <Text style={styles.loadingText}>Generando QR...</Text>
+              </View>
+            )}
+          </View>
+          
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
           {/* Timer */}
           <View style={styles.timerContainer}>
             <View style={styles.timerIcon}>
@@ -192,9 +322,12 @@ export default function QRBeneficioScreen() {
             <Text style={styles.timerText}>
               Válido por: <Text style={styles.timerValue}>{formatTime(timeRemaining)}</Text>
             </Text>
+<<<<<<< HEAD
             <TouchableOpacity onPress={claimQr} style={{ marginLeft: 12 }}>
               <Text style={{ color: COLORS.PRIMARY_GREEN, fontWeight: 'bold' }}>Generar nuevo</Text>
             </TouchableOpacity>
+=======
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
           </View>
         </View>
 
@@ -204,13 +337,22 @@ export default function QRBeneficioScreen() {
             <View style={styles.stepNumber}>
               <Text style={styles.stepNumberText}>1</Text>
             </View>
+<<<<<<< HEAD
             <Text style={styles.instructionText}>Mostrá este código QR al personal del comercio</Text>
           </View>
 
+=======
+            <Text style={styles.instructionText}>
+              Muestra este código QR al personal del comercio
+            </Text>
+          </View>
+          
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
           <View style={styles.instructionRow}>
             <View style={styles.stepNumber}>
               <Text style={styles.stepNumberText}>2</Text>
             </View>
+<<<<<<< HEAD
             <Text style={styles.instructionText}>El descuento se aplicará automáticamente</Text>
           </View>
 
@@ -220,13 +362,33 @@ export default function QRBeneficioScreen() {
               <Text style={styles.stepNumberText}>3</Text>
             </View>
             <Text style={styles.instructionText}>Este QR expira en 1 hora</Text>
+=======
+            <Text style={styles.instructionText}>
+              El descuento se aplicará automáticamente
+            </Text>
+          </View>
+          
+          <View style={styles.instructionRow}>
+            <View style={styles.stepNumber}>
+              <Text style={styles.stepNumberText}>3</Text>
+            </View>
+            <Text style={styles.instructionText}>
+              Recuerda que este QR expira en 1 hora
+            </Text>
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
           </View>
         </View>
 
         {/* Warning */}
         <View style={styles.warningContainer}>
           <Ionicons name="warning-outline" size={20} color={COLORS.WARNING} />
+<<<<<<< HEAD
           <Text style={styles.warningText}>Este código QR es de uso único y expira automáticamente después de 1 hora</Text>
+=======
+          <Text style={styles.warningText}>
+            Este código QR es de uso único y expira automáticamente después de 1 hora
+          </Text>
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
         </View>
       </ScrollView>
 
@@ -236,7 +398,14 @@ export default function QRBeneficioScreen() {
 }
 
 const styles = StyleSheet.create({
+<<<<<<< HEAD
   container: { flex: 1, backgroundColor: COLORS.BACKGROUND_SECONDARY },
+=======
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.BACKGROUND_SECONDARY,
+  },
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
   header: {
     backgroundColor: COLORS.PRIMARY_GREEN,
     paddingTop: 50,
@@ -246,6 +415,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+<<<<<<< HEAD
   backButton: { padding: 8 },
   headerTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.WHITE, fontFamily: 'BarlowCondensed-Bold' },
   placeholder: { width: 40 },
@@ -257,6 +427,62 @@ const styles = StyleSheet.create({
   comercioName: { fontSize: 24, fontWeight: 'bold', color: COLORS.TEXT_PRIMARY, textAlign: 'center', marginBottom: 8, fontFamily: 'BarlowCondensed-Bold' },
   descuentoText: { fontSize: 16, color: COLORS.TEXT_SECONDARY, textAlign: 'center', lineHeight: 22 },
   qrContainer: { alignItems: 'center', marginBottom: 30 },
+=======
+  backButton: {
+    padding: 8,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.WHITE,
+    fontFamily: 'BarlowCondensed-Bold',
+  },
+  placeholder: {
+    width: 40,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  contentContainer: {
+    padding: 20,
+    paddingBottom: 100, // Extra padding to avoid overlap with mobile buttons
+  },
+  beneficioInfo: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  categoriaTag: {
+    backgroundColor: COLORS.PRIMARY_GREEN,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 12,
+  },
+  categoriaText: {
+    color: COLORS.WHITE,
+    fontSize: 12,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  comercioName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.TEXT_PRIMARY,
+    textAlign: 'center',
+    marginBottom: 8,
+    fontFamily: 'BarlowCondensed-Bold',
+  },
+  descuentoText: {
+    fontSize: 16,
+    color: COLORS.TEXT_SECONDARY,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  qrContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
   qrWrapper: {
     backgroundColor: COLORS.WHITE,
     padding: 20,
@@ -281,6 +507,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+<<<<<<< HEAD
   timerIcon: { marginRight: 8 },
   timerText: { fontSize: 14, color: COLORS.TEXT_SECONDARY },
   timerValue: { fontWeight: 'bold', color: COLORS.PRIMARY_GREEN, fontFamily: 'BarlowCondensed-Bold' },
@@ -296,4 +523,88 @@ const styles = StyleSheet.create({
   qrWithLogo: { position: 'relative' },
   logoOverlay: { position: 'absolute', backgroundColor: COLORS.WHITE, borderRadius: 8, justifyContent: 'center', alignItems: 'center', padding: 2 },
   logoImage: { width: '100%', height: '100%' },
+=======
+  timerIcon: {
+    marginRight: 8,
+  },
+  timerText: {
+    fontSize: 14,
+    color: COLORS.TEXT_SECONDARY,
+  },
+  timerValue: {
+    fontWeight: 'bold',
+    color: COLORS.PRIMARY_GREEN,
+    fontFamily: 'BarlowCondensed-Bold',
+  },
+  instructionsContainer: {
+    marginBottom: 20,
+  },
+  instructionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  stepNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.PRIMARY_GREEN,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  stepNumberText: {
+    color: COLORS.WHITE,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  instructionText: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.TEXT_PRIMARY,
+    lineHeight: 20,
+  },
+  warningContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFF3CD',
+    padding: 16,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.WARNING,
+  },
+  warningText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#856404',
+    marginLeft: 12,
+    lineHeight: 18,
+  },
+  qrPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.WHITE,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: COLORS.TEXT_SECONDARY,
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  qrWithLogo: {
+    position: 'relative',
+  },
+  logoOverlay: {
+    position: 'absolute',
+    backgroundColor: COLORS.WHITE,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 2,
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+  },
+>>>>>>> parent of 573c639 (Merge pull request #1 from HeraclioOrtiz/javi)
 });

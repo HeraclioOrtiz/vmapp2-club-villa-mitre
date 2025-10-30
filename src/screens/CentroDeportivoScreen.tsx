@@ -34,18 +34,33 @@ const centroDeportivoOptions: CentroDeportivoOption[] = [
   {
     id: '1',
     title: 'Natatorio',
-    description: 'Horarios, clases de natación y actividades acuáticas',
+    description: 'Tres piletas climatizadas y actividades acuáticas',
     icon: 'water-outline',
     screen: 'Natatorio',
     sections: [
       {
-        title: 'Información',
-        description:
-          'Espacio destinado a clases y actividades acuáticas del club.',
+        title: 'Piletas',
         bullets: [
-          { text: 'Horarios y turnos organizados por niveles' },
-          { text: 'Clases grupales e individuales' },
-          { text: 'Actividades acuáticas recreativas' },
+          { text: 'Semiolímpica' },
+          { text: 'Pileta para gimnasia acuática' },
+          { text: 'Pileta especialmente diseñada para niños' },
+        ],
+      },
+      {
+        title: 'Actividades',
+        bullets: [
+          { text: 'Matronatación' },
+          { text: 'Escuelita' },
+          { text: 'Adultos' },
+          { text: 'Gimnasia acuática' },
+          { text: 'Hidroterapia' },
+        ],
+      },
+      {
+        title: 'Horario y contacto',
+        bullets: [
+          { text: 'Horario: 6.00 a 22.00 hs' },
+          { text: 'WhatsApp: 291-4439070' },
         ],
       },
     ],
@@ -53,18 +68,45 @@ const centroDeportivoOptions: CentroDeportivoOption[] = [
   {
     id: '2',
     title: 'Gimnasio',
-    description: 'Equipamiento, rutinas y entrenamiento personalizado',
+    description: 'Sala de musculación y sala de cardio',
     icon: 'fitness-outline',
     screen: 'Gimnasio',
     sections: [
       {
-        title: 'Información',
-        description:
-          'Sala equipada para entrenamiento de fuerza y acondicionamiento.',
+        title: 'Modalidad y aranceles',
         bullets: [
-          { text: 'Circuitos de musculación y cardio' },
-          { text: 'Rutinas orientadas a objetivos' },
-          { text: 'Acompañamiento y seguimiento dentro de la app' },
+          { text: 'Pase Libre: $55.000 + cuota social' },
+        ],
+      },
+      {
+        title: 'Descuentos (si realizás actividades acuáticas)',
+        bullets: [
+          { text: '2 veces por semana: $45.000' },
+          { text: '3 o más veces por semana: $35.000' },
+        ],
+      },
+      {
+        title: 'Horario y contacto',
+        bullets: [
+          { text: 'Horario: 6.00 a 22.00 hs' },
+          { text: 'WhatsApp: 291-4439070' },
+        ],
+      },
+    ],
+  },
+  {
+    id: '4',
+    title: 'MI RUTINA',
+    description: 'Planificá, guardá y seguí tus rutinas personalizadas',
+    icon: 'list-outline',
+    screen: 'MiRutina',
+    sections: [
+      {
+        title: '¿Qué podés hacer?',
+        bullets: [
+          { text: 'Crear y guardar rutinas por objetivos' },
+          { text: 'Ver series, repeticiones y cargas' },
+          { text: 'Registrar progreso día a día' },
         ],
       },
     ],
@@ -72,18 +114,27 @@ const centroDeportivoOptions: CentroDeportivoOption[] = [
   {
     id: '3',
     title: 'Consultorios Médicos',
-    description: 'Atención médica deportiva y rehabilitación',
+    description: 'Atención a socios y no socios',
     icon: 'medical-outline',
     screen: 'ConsultoriosMedicos',
     sections: [
       {
-        title: 'Servicios',
-        description:
-          'Orientados a la evaluación y cuidado de la salud deportiva.',
+        title: 'Especialidades',
         bullets: [
-          { text: 'Evaluación médica deportiva' },
-          { text: 'Orientación para rehabilitación' },
-          { text: 'Derivación a profesionales del club' },
+          { text: 'Traumatología' },
+          { text: 'Traumatología pediátrica' },
+          { text: 'Clínica médica' },
+          { text: 'Cardiología' },
+          { text: 'Pediatría' },
+          { text: 'Psicología' },
+          { text: 'Nutrición' },
+        ],
+      },
+      {
+        title: 'Horario y contacto',
+        bullets: [
+          { text: 'Horario: 16.00 a 20.00 hs' },
+          { text: 'WhatsApp: 291-5038055' },
         ],
       },
     ],
@@ -129,7 +180,7 @@ export default function CentroDeportivoScreen() {
       <ScrollView style={styles.container}>
         <Text style={styles.headerText}>Centro Deportivo</Text>
         <Text style={styles.subHeaderText}>
-          Accedé a todas las instalaciones y servicios deportivos del club
+          Accedé a todas las instalaciones y servicios del club
         </Text>
 
         <View style={styles.optionsContainer}>
@@ -210,7 +261,7 @@ export default function CentroDeportivoScreen() {
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+  backgroundColor: '#f5f5f5',
   },
   container: {
     flex: 1,
